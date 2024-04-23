@@ -62,3 +62,4 @@ Signed-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>
 ### Features
 
 * **cbdc-bridging-app:** implementation of CBDC bridging example ([ca1b3be](https://github.com/hyperledger/cacti/commit/ca1b3be87bcc3242790647a71be8eb5db3dcd931)), closes [#2205](https://github.com/hyperledger/cacti/issues/2205)
+
