@@ -99,3 +99,4 @@ export class Configuration {
         return mime !== null && (jsonMime.test(mime) || mime.toLowerCase() === 'application/json-patch+json');
     }
 }
+

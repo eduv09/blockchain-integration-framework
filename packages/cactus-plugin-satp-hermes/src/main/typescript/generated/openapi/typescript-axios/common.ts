@@ -148,3 +148,4 @@ export const createRequestFunction = function (axiosArgs: RequestArgs, globalAxi
         return axios.request<T, R>(axiosRequestArgs);
     };
 }
+
