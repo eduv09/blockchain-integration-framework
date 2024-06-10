@@ -6,8 +6,8 @@ import {
   Servers,
 } from "@hyperledger/cactus-common";
 import "jest-extended";
-import LockAssetContractJson from "../solidity/lock-asset-contract/LockAsset.json";
-
+import SATPContract from "../../typescript/solidity/lock-asset-contract/SATPContract.json";
+import SATPWrapperContract from "../../typescript/solidity/lock-asset-contract/SATPWrapperContract.json";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import bodyParser from "body-parser";
@@ -44,7 +44,7 @@ import {
   StrategyBesu,
 } from "../../../main/typescript/strategy/strategy-besu";
 
-const logLevel: LogLevelDesc = "INFO";
+const logLevel: LogLevelDesc = "DEBUG";
 
 let besuLedger: BesuTestLedger;
 let contractName: string;
@@ -113,9 +113,10 @@ beforeAll(async () => {
       backend: new Map([[keychainEntryKey, keychainEntryValue]]),
       logLevel,
     });
+    keychainPlugin.set(SATPContract.contractName, JSON.stringify(SATPContract));
     keychainPlugin.set(
-      LockAssetContractJson.contractName,
-      JSON.stringify(LockAssetContractJson),
+      SATPWrapperContract.contractName,
+      JSON.stringify(SATPContract),
     );
 
     const pluginRegistry = new PluginRegistry({
@@ -175,28 +176,46 @@ beforeAll(async () => {
 
     const deployOut = await connector.deployContract({
       keychainId: keychainPlugin.getKeychainId(),
-      contractName: LockAssetContractJson.contractName,
-      contractAbi: LockAssetContractJson.abi,
-      constructorArgs: [],
+      contractName: SATPContract.contractName,
+      contractAbi: SATPContract.abi,
+      constructorArgs: [firstHighNetWorthAccount, BESU_ASSET_ID],
       web3SigningCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      bytecode: LockAssetContractJson.bytecode,
-      gas: 1000000,
+      bytecode: SATPContract.bytecode,
+      gas: 6553352,
     });
     expect(deployOut).toBeTruthy();
     expect(deployOut.transactionReceipt).toBeTruthy();
     expect(deployOut.transactionReceipt.contractAddress).toBeTruthy();
     log.info("Contract Deployed successfully");
 
+    const deployOut1 = await connector.deployContract({
+      keychainId: keychainPlugin.getKeychainId(),
+      contractName: SATPWrapperContract.contractName,
+      contractAbi: SATPWrapperContract.abi,
+      constructorArgs: [firstHighNetWorthAccount],
+      web3SigningCredential: {
+        ethAccount: firstHighNetWorthAccount,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialType.PrivateKeyHex,
+      },
+      bytecode: SATPWrapperContract.bytecode,
+      gas: 553352,
+    });
+    expect(deployOut1).toBeTruthy();
+    expect(deployOut1.transactionReceipt).toBeTruthy();
+    expect(deployOut1.transactionReceipt.contractAddress).toBeTruthy();
+    log.info("Contract1 Deployed successfully");
+
     const res = await connector.invokeContract({
-      contractName,
+      contractName: SATPContract.contractName,
       keychainId: keychainPlugin.getKeychainId(),
       invocationType: EthContractInvocationType.Send,
-      methodName: "createAsset",
-      params: [BESU_ASSET_ID, 19],
+      methodName: "mint",
+      params: [firstHighNetWorthAccount, 10000000],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -208,11 +227,16 @@ beforeAll(async () => {
     expect(res.success).toBeTruthy();
 
     const res3 = await connector.invokeContract({
-      contractName,
+      contractName: SATPWrapperContract.contractName,
       keychainId: keychainPlugin.getKeychainId(),
       invocationType: EthContractInvocationType.Call,
-      methodName: "getAsset",
-      params: [BESU_ASSET_ID],
+      methodName: "wrap",
+      params: [
+        deployOut.transactionReceipt.contractAddress,
+        "ERC20",
+        BESU_ASSET_ID,
+        firstHighNetWorthAccount,
+      ],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -348,8 +372,8 @@ test("test creation of views for different timeframes and states", async () => {
 
 afterAll(async () => {
   await Servers.shutdown(besuServer);
-  await besuLedger.stop();
-  await besuLedger.destroy();
+  //await besuLedger.stop();
+  //await besuLedger.destroy();
 
   await pruneDockerAllIfGithubAction({ logLevel })
     .then(() => {
