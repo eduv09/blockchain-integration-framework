@@ -1,5 +1,8 @@
 import { LogLevelDesc, LoggerProvider } from "@hyperledger/cactus-common";
-import { pruneDockerAllIfGithubAction, Containers } from "@hyperledger/cactus-test-tooling";
+import {
+  pruneDockerAllIfGithubAction,
+  Containers,
+} from "@hyperledger/cactus-test-tooling";
 import { CbdcBridgingApp } from "../../../main/typescript";
 import { ICbdcBridgingApp } from "../../../main/typescript/cbdc-bridging-app";
 
@@ -18,8 +21,7 @@ beforeAll(async () => {
       await Containers.logDiagnostics({ logLevel });
       fail("Pruning didn't throw OK");
     });
-  }
-);
+});
 
 afterAll(async () => {
   await pruneDockerAllIfGithubAction({ logLevel })
@@ -40,7 +42,7 @@ describe("Setup CBDC app infrastructure", () => {
       apiServer2Port: 4100,
       apiHost: "localhost",
       apiServer1CrpcPort: 6000,
-      apiServer2CrpcPort:6100,
+      apiServer2CrpcPort: 6100,
       apiCrpcHost: "localhost",
       logLevel,
     };
@@ -53,4 +55,4 @@ describe("Setup CBDC app infrastructure", () => {
   it("Should shutdown everything successfully", async () => {
     await app.stop();
   });
-})
+});

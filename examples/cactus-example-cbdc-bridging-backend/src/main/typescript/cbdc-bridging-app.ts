@@ -1,9 +1,9 @@
 import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
-import { Server } from "http";
 import exitHook, { IAsyncExitHookDoneCallback } from "async-exit-hook";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
+  IListenOptions,
   LogLevelDesc,
   Logger,
   LoggerProvider,
@@ -25,6 +25,11 @@ import { DefaultApi as BesuApi } from "@hyperledger/cactus-plugin-ledger-connect
 import { FabricSatpGateway } from "./satp-extension/fabric-satp-gateway";
 import { BesuSatpGateway } from "./satp-extension/besu-satp-gateway";
 import CryptoMaterial from "../../crypto-material/crypto-material.json";
+import express from "express";
+import bodyParser from "body-parser";
+import http, { Server } from "http";
+import { Server as SocketIoServer } from "socket.io";
+import { Constants } from "@hyperledger/cactus-core-api";
 
 export interface ICbdcBridgingApp {
   apiHost: string;
@@ -87,20 +92,45 @@ export class CbdcBridgingApp {
     this.log.info("Creating Besu Connector");
     const besuPlugin = await this.infrastructure.createBesuLedgerConnector();
 
+    let addressInfoA: AddressInfo;
+    let addressInfoB: AddressInfo;
+
     // Reserve the ports where the API Servers will run
-    const httpApiA = await Servers.startOnPort(
-      this.options.apiServer1Port,
-      this.options.apiHost,
-    );
-    const httpApiB = await Servers.startOnPort(
-      this.options.apiServer2Port,
-      this.options.apiHost,
-    );
+    {
+      const expressApp = express();
+      expressApp.use(bodyParser.json({ limit: "250mb" }));
+      const fabricServer = http.createServer(expressApp);
 
-    const addressInfoA = httpApiA.address() as AddressInfo;
+      const listenOptions: IListenOptions = {
+        hostname: this.options.apiHost,
+        port: this.options.apiServer1Port,
+        server: fabricServer,
+      };
+      addressInfoA = (await Servers.listen(listenOptions)) as AddressInfo;
+          
+      await fabricPlugin.getOrCreateWebServices();
+      await fabricPlugin.registerWebServices(expressApp);
+
+    }
+
+  {    
+    const expressApp = express();
+    expressApp.use(bodyParser.json({ limit: "250mb" }));
+    const besuServer = http.createServer(expressApp);
+    const listenOptions: IListenOptions = {
+      hostname: this.options.apiHost,
+      port: this.options.apiServer2Port,
+      server: besuServer,
+    };
+    addressInfoB = (await Servers.listen(listenOptions)) as AddressInfo;
+    await besuPlugin.getOrCreateWebServices();
+    const wsApi = new SocketIoServer(besuServer, {
+      path: Constants.SocketIoConnectionPathV1,
+    });
+    await besuPlugin.registerWebServices(expressApp, wsApi);
+  }
+   
     const nodeApiHostA = `http://${this.options.apiHost}:${addressInfoA.port}`;
-
-    const addressInfoB = httpApiB.address() as AddressInfo;
     const nodeApiHostB = `http://${this.options.apiHost}:${addressInfoB.port}`;
 
     /*const fabricSatpGateway = await this.infrastructure.createClientGateway(
@@ -154,7 +184,7 @@ export class CbdcBridgingApp {
     this.log.info("Deploying chaincode and smart contracts...");
 
     await this.infrastructure.deployFabricSATPContract(fabricApiClient);
-    
+
     await this.infrastructure.deployFabricWrapperContract(
       fabricApiClient,
     );

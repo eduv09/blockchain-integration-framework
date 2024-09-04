@@ -173,7 +173,7 @@ export class CbdcBridgingAppDummyInfrastructure {
     const keychainPlugin = new PluginKeychainMemory({
       instanceId: uuidv4(),
       keychainId: CryptoMaterial.keychains.keychain1.id,
-      logLevel: undefined,
+      logLevel: this.options.logLevel || "INFO",
       backend: new Map([
         [keychainEntryKey1, keychainEntryValue1],
         [keychainEntryKey2, keychainEntryValue2],
@@ -364,68 +364,108 @@ export class CbdcBridgingAppDummyInfrastructure {
         filename,
       });
     }
-
+    this.log.info(`Deploying Fabric SATP contract in API`);
     
-    await fabricApiClient
+    const res = await fabricApiClient
       .deployContractV1(
         {
-          channelId,
+          channelId: channelId,
           ccVersion: "1.0.0",
           sourceFiles: satpSourceFiles,
           ccName: contractName,
           targetOrganizations: [this.org1Env, this.org2Env],
           caFile:
             FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
-          ccLabel: "asset-reference-contract",
+          ccLabel: contractName,
           ccLang: ChainCodeProgrammingLanguage.Typescript,
           ccSequence: 1,
           orderer: "orderer.example.com:7050",
           ordererTLSHostnameOverride: "orderer.example.com",
-          connTimeout: 120,
+          connTimeout: 60,
         },
-        {
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-        },
-      )
-      .then(async (res: { data: { packageIds: any; lifecycle: any } }) => {
+        // {
+        //   maxContentLength: Infinity,
+        //   maxBodyLength: Infinity,
+        // },
+      );
 
-        const { packageIds, lifecycle } = res.data;
+      const { packageIds, lifecycle, success } = res.data;
+      expect(res.status).toBe(200);
+      expect(success).toBe(true);
+      expect(lifecycle).not.toBeUndefined();
+  
+      const {
+        approveForMyOrgList,
+        installList,
+        queryInstalledList,
+        commit,
+        packaging,
+        queryCommitted,
+      } = lifecycle;
+  
+      Checks.truthy(packageIds, `packageIds truthy OK`);
+      Checks.truthy(
+            Array.isArray(packageIds),
+            `Array.isArray(packageIds) truthy OK`,
+          );
+  
+      Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
+      Checks.truthy(
+        Array.isArray(approveForMyOrgList),
+        `Array.isArray(approveForMyOrgList) truthy OK`,
+      );
+      Checks.truthy(installList, `installList truthy OK`);
+      Checks.truthy(
+        Array.isArray(installList),
+        `Array.isArray(installList) truthy OK`,
+      );
+      Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
+      Checks.truthy(
+        Array.isArray(queryInstalledList),
+        `Array.isArray(queryInstalledList) truthy OK`,
+      );
+      Checks.truthy(commit, `commit truthy OK`);
+      Checks.truthy(packaging, `packaging truthy OK`);
+      Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
+      this.log.info("SATP Contract deployed");
+      // .then(async (res: { data: { packageIds: any; lifecycle: any } }) => {
 
-        const {
-          approveForMyOrgList,
-          installList,
-          queryInstalledList,
-          commit,
-          packaging,
-          queryCommitted,
-        } = lifecycle;
+      //   const { packageIds, lifecycle } = res.data;
 
-        Checks.truthy(packageIds, `packageIds truthy OK`);
-        Checks.truthy(
-          Array.isArray(packageIds),
-          `Array.isArray(packageIds) truthy OK`,
-        );
-        Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
-        Checks.truthy(
-          Array.isArray(approveForMyOrgList),
-          `Array.isArray(approveForMyOrgList) truthy OK`,
-        );
-        Checks.truthy(installList, `installList truthy OK`);
-        Checks.truthy(
-          Array.isArray(installList),
-          `Array.isArray(installList) truthy OK`,
-        );
-        Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
-        Checks.truthy(
-          Array.isArray(queryInstalledList),
-          `Array.isArray(queryInstalledList) truthy OK`,
-        );
-        Checks.truthy(commit, `commit truthy OK`);
-        Checks.truthy(packaging, `packaging truthy OK`);
-        Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
-      })
-      .catch(() => console.log("failed deploying fabric SATP contract"));
+      //   const {
+      //     approveForMyOrgList,
+      //     installList,
+      //     queryInstalledList,
+      //     commit,
+      //     packaging,
+      //     queryCommitted,
+      //   } = lifecycle;
+
+      //   Checks.truthy(packageIds, `packageIds truthy OK`);
+      //   Checks.truthy(
+      //     Array.isArray(packageIds),
+      //     `Array.isArray(packageIds) truthy OK`,
+      //   );
+      //   Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
+      //   Checks.truthy(
+      //     Array.isArray(approveForMyOrgList),
+      //     `Array.isArray(approveForMyOrgList) truthy OK`,
+      //   );
+      //   Checks.truthy(installList, `installList truthy OK`);
+      //   Checks.truthy(
+      //     Array.isArray(installList),
+      //     `Array.isArray(installList) truthy OK`,
+      //   );
+      //   Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
+      //   Checks.truthy(
+      //     Array.isArray(queryInstalledList),
+      //     `Array.isArray(queryInstalledList) truthy OK`,
+      //   );
+      //   Checks.truthy(commit, `commit truthy OK`);
+      //   Checks.truthy(packaging, `packaging truthy OK`);
+      //   Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
+      // })
+      // .catch(() => console.log("failed deploying fabric SATP contract"));
     
     }
   
@@ -438,7 +478,7 @@ export class CbdcBridgingAppDummyInfrastructure {
 
     const contractName = CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER;
 
-    const contractRelPath = "../../../fabric-contracts/cbdc-erc-20/javascript";
+    const contractRelPath = "../../../fabric-contracts/satp-wrapper/chaincode-typescript";
     const contractDir = path.join(__dirname, contractRelPath);
 
     // ├── package.json
@@ -554,6 +594,7 @@ export class CbdcBridgingAppDummyInfrastructure {
 
     let retries = 0;
     while (retries <= 5) {
+      console.log("trying to deploy fabric contract - ", retries);
       await fabricApiClient
         .deployContractV1(
           {
@@ -564,7 +605,7 @@ export class CbdcBridgingAppDummyInfrastructure {
             targetOrganizations: [this.org1Env, this.org2Env],
             caFile:
               FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
-            ccLabel: "cbdc",
+            ccLabel: contractName,
             ccLang: ChainCodeProgrammingLanguage.Javascript,
             ccSequence: 1,
             orderer: "orderer.example.com:7050",
