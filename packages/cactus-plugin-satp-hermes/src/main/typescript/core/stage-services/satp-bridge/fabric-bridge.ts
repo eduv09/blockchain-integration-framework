@@ -9,6 +9,7 @@ import {
   FabricConfig,
   TransactionResponse,
 } from "../../../types/blockchain-interaction";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { PrivacyPolicyOpts } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/generated/openapi/typescript-axios";
 import { FabricAsset, getVarTypes } from "./types/fabric-asset";
 import {
@@ -298,19 +299,28 @@ export class FabricBridge implements NetworkBridge {
       output: response.functionOutput,
     };
   }
-
-  public async getReceipt(
-    assetId: string,
-    transactionId: string,
-  ): Promise<string> {
+  public async getReceipt(transactionId: string): Promise<string> {
     const fnTag = `${FabricBridge.CLASS_NAME}}#getReceipt`;
-    this.log.debug(
-      `${fnTag}, Getting Receipt: ${assetId} transactionHash: ${transactionId}`,
-    );
+    this.log.debug(`${fnTag}, Getting Receipt: ${transactionId}`);
+    const receipt = await this.connector.getTransactionReceiptByTxID({
+      signingCredential: this.config.signingCredential,
+      channelName: this.config.channelName,
+      contractName: "qscc",
+      invocationType: FabricContractInvocationType.Call,
+      methodName: "GetBlockByTxID",
+      params: [this.config.channelName, transactionId],
+    });
+
+    return JSON.stringify(receipt);
+  }
+
+  public async getView(assetId: string): Promise<string> {
+    const fnTag = `${FabricBridge.CLASS_NAME}}#getView`;
+    this.log.debug(`${fnTag}, Getting View: ${assetId}`);
     //todo needs implementation
     const networkDetails = {
-      //connector: this.connector,
-      connectorApiPath: "", //todo check this to not use api
+      connector: this.connector,
+      //connectorApiPath: "", //todo check this to not use api
       signingCredential: this.config.signingCredential,
       contractName: this.config.contractName,
       channelName: this.config.channelName,
@@ -318,7 +328,7 @@ export class FabricBridge implements NetworkBridge {
     };
 
     const snapshot = await this.bungee.generateSnapshot(
-      [],
+      [assetId],
       this.network,
       networkDetails,
     );
@@ -330,18 +340,7 @@ export class FabricBridge implements NetworkBridge {
       undefined,
     );
 
-    if (generated.view == undefined) {
-      throw new Error("View is undefined");
-    }
-
-    const view = await this.bungee.processView(
-      generated.view,
-      //PrivacyPolicyOpts.SingleTransaction,
-      PrivacyPolicyOpts.PruneState,
-      [assetId, transactionId],
-    );
-
-    return view.getViewStr();
+    return JSON.stringify(generated);
   }
 
   private interactionList(jsonString: string): InteractionSignature[] {

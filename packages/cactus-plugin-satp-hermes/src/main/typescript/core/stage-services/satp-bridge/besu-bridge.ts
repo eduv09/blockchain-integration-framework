@@ -11,6 +11,7 @@ import {
 import { NetworkBridge } from "./network-bridge";
 import { PluginBungeeHermes } from "@hyperledger/cactus-plugin-bungee-hermes";
 import { StrategyBesu } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/strategy/strategy-besu";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { PrivacyPolicyOpts } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/generated/openapi/typescript-axios";
 import { BesuAsset, getVarTypes } from "./types/besu-asset";
 import {
@@ -310,28 +311,19 @@ export class BesuBridge implements NetworkBridge {
       output: response.callOutput ?? undefined,
     };
   }
-
-  public async getReceipt(
-    assetId: string,
-    transactionHash: string,
-  ): Promise<string> {
-    const fnTag = `${BesuBridge.CLASS_NAME}}#getReceipt`;
-    this.log.debug(
-      `${fnTag}, Getting Receipt: ${assetId} transactionHash: ${transactionHash}`,
-    );
-    //todo needs implementation
+  public async getView(assetId: string): Promise<string> {
     const networkDetails = {
-      //connector: this.connector,
+      connector: this.connector,
       connectorApiPath: "",
       signingCredential: this.config.signingCredential,
       contractName: this.config.contractName,
       contractAddress: this.config.contractAddress,
       keychainId: this.config.keychainId,
-      participant: "Org1MSP",
+      participant: "Org1MSP", // ??
     };
 
     const snapshot = await this.bungee.generateSnapshot(
-      [],
+      [assetId],
       this.network,
       networkDetails,
     );
@@ -347,14 +339,22 @@ export class BesuBridge implements NetworkBridge {
       throw new Error("View is undefined");
     }
 
-    const view = await this.bungee.processView(
-      generated.view,
-      //PrivacyPolicyOpts.SingleTransaction,
-      PrivacyPolicyOpts.PruneState,
-      [assetId, transactionHash],
+    return JSON.stringify(generated);
+  }
+  public async getReceipt(
+    //assetId: string,
+    transactionId: string,
+  ): Promise<string> {
+    const fnTag = `${BesuBridge.CLASS_NAME}}#getReceipt`;
+    this.log.debug(
+      `${fnTag}, Getting Receipt: transactionId: ${transactionId}`,
     );
+    //TODO: implement getReceipt instead of transaction
+    const receipt = await this.connector.getTransaction({
+      transactionHash: transactionId,
+    });
 
-    return view.getViewStr();
+    return JSON.stringify(receipt.transaction);
   }
 
   private interactionList(jsonString: string): InteractionsRequest[] {

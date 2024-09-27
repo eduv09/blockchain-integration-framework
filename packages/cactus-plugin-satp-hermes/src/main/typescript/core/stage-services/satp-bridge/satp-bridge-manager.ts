@@ -29,11 +29,10 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = "";
-    //  this.config.network.getReceipt(
-    //   asset.tokenId,
-    //   response.transactionId,
-    // );
+    const receipt = ""; /*await this.config.network.getReceipt(
+      response.transactionId,
+    );*/
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset wrapping: ${receipt}`);
 
@@ -48,10 +47,8 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = this.config.network.getReceipt(
-      assetId,
-      response.transactionId,
-    );
+    const receipt = this.config.network.getReceipt(response.transactionId);
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset unwrapping: ${receipt}`);
 
@@ -71,12 +68,8 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = "";
-    //  this.config.network.getReceipt(
-    //   asset.tokenId,
-    //   response.transactionId,
-    // );
-
+    const receipt = this.config.network.getReceipt(response.transactionId);
+    //TODO generate View
     this.log.info(`${fnTag}, proof of the asset lock: ${receipt}`);
 
     return receipt;
@@ -92,9 +85,9 @@ export class SATPBridgeManager implements BridgeManager {
     }
 
     const receipt = await this.config.network.getReceipt(
-      assetId,
       response.transactionId,
     );
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset unlock: ${receipt}`);
 
@@ -110,11 +103,10 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = "";
-    //  this.config.network.getReceipt(
-    //   asset.tokenId,
-    //   response.transactionId,
-    // );
+    const receipt = await this.config.network.getReceipt(
+      transaction.transactionId,
+    );
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset creation: ${receipt}`);
 
@@ -130,11 +122,10 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = "";
-    //  this.config.network.getReceipt(
-    //   asset.tokenId,
-    //   response.transactionId,
-    // );
+    const receipt = await this.config.network.getReceipt(
+      transaction.transactionId,
+    );
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset deletion: ${receipt}`);
 
@@ -158,11 +149,10 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = "";
-    //  this.config.network.getReceipt(
-    //   asset.tokenId,
-    //   response.transactionId,
-    // );
+    const receipt = await this.config.network.getReceipt(
+      response.transactionId,
+    );
+    //TODO generate View
 
     this.log.info(`${fnTag}, proof of the asset assignment: ${receipt}`);
 
