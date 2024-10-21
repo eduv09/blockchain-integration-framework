@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // this file contains a class that encapsulates the logic for managing the SATP bridge (lock, unlock, etc).
 // should inject satp gateway session data (having parameters/chains for transactions), and processes smart contract output
 import { BridgeManager } from "./bridge-manager";
@@ -68,8 +69,10 @@ export class SATPBridgeManager implements BridgeManager {
       throw new TransactionIdUndefinedError(fnTag);
     }
 
-    const receipt = this.config.network.getReceipt(response.transactionId);
-    //TODO generate View
+    const receipt = await this.config.network.getReceipt(
+      response.transactionId,
+    );
+    //const view = await this.config.network.getView(assetId);
     this.log.info(`${fnTag}, proof of the asset lock: ${receipt}`);
 
     return receipt;
@@ -87,7 +90,7 @@ export class SATPBridgeManager implements BridgeManager {
     const receipt = await this.config.network.getReceipt(
       response.transactionId,
     );
-    //TODO generate View
+    //const view = await this.config.network.getView(assetId);
 
     this.log.info(`${fnTag}, proof of the asset unlock: ${receipt}`);
 
@@ -106,8 +109,7 @@ export class SATPBridgeManager implements BridgeManager {
     const receipt = await this.config.network.getReceipt(
       transaction.transactionId,
     );
-    //TODO generate View
-
+    //const view = await this.config.network.getView(assetId);
     this.log.info(`${fnTag}, proof of the asset creation: ${receipt}`);
 
     return receipt;
@@ -125,7 +127,7 @@ export class SATPBridgeManager implements BridgeManager {
     const receipt = await this.config.network.getReceipt(
       transaction.transactionId,
     );
-    //TODO generate View
+    //const view = await this.config.network.getView(assetId);
 
     this.log.info(`${fnTag}, proof of the asset deletion: ${receipt}`);
 
@@ -152,8 +154,7 @@ export class SATPBridgeManager implements BridgeManager {
     const receipt = await this.config.network.getReceipt(
       response.transactionId,
     );
-    //TODO generate View
-
+    //const view = await this.config.network.getView(assetId);
     this.log.info(`${fnTag}, proof of the asset assignment: ${receipt}`);
 
     return receipt;

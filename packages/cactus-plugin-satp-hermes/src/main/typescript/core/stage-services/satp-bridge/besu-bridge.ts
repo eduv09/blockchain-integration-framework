@@ -314,7 +314,7 @@ export class BesuBridge implements NetworkBridge {
   public async getView(assetId: string): Promise<string> {
     const networkDetails = {
       connector: this.connector,
-      connectorApiPath: "",
+      //connectorApiPath: "",
       signingCredential: this.config.signingCredential,
       contractName: this.config.contractName,
       contractAddress: this.config.contractAddress,

@@ -1013,54 +1013,59 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       destinyAsset,
     };
     const data = [];
-    const data2 = [];
-    const start = Date.now();
-    for (let index = 0; index < 20; index++) {
+    for (let index = 0; index < 100; index++) {
+      const start = Date.now();
       const res = await dispatcher?.Transact(req);
       const end = Date.now();
       const interval = end - start;
       data.push(interval / 1000);
-      data2.push(
-        index == 0 ? interval / 1000 : interval / 1000 - data[index - 1],
-      );
       expect(res?.statusResponse.status).toEqual(StatusResponseStatusEnum.Done);
     }
-    await createGraph(data, data2, 20);
+    await createGraph(data, [], 100, "besu-fabric-without-bungee");
     await gateway.shutdown();
   });
 });
 
-async function createGraph(data: number[], data2: number[], n: number) {
-  const width = 800; // Width of the image
+async function createGraph(
+  data: number[],
+  data2: number[],
+  n: number,
+  filename: string,
+) {
+  const width = 1600; // Width of the image
   const height = 800; // Height of the image
-  const average = data[n - 1] / n;
+  let sum = 0;
+  for (const num of data) {
+    sum += num;
+  }
+  const average = sum / n;
   log.info(data);
   const chartJSNodeCanvas = new ChartJSNodeCanvas({
     width,
     height,
     backgroundColour: "white",
   });
-  data2.map((point) => {
-    return (point - average) ** 2;
-  });
-  let sum = 0;
-  for (const point of data2) {
-    sum += point;
-  }
-  const std = Math.sqrt(sum / n);
   const configuration = {
     type: "line" as const,
     data: {
       labels: Array.from({ length: n }, (_, i) => (i + 1).toString()),
       datasets: [
         {
-          label: "Time",
+          label: "Besu->Fabric",
           data,
-          borderColor: "rgba(75, 192, 192, 1)",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderWidth: 1,
+          borderColor: "rgba(0, 0, 255, 1)",
+          backgroundColor: "rgba(0, 0, 255, 0.2)",
+          borderWidth: 2,
           tension: 0.4,
         },
+        /*{
+          label: "Fabric-Besu",
+          data,
+          borderColor: "rgba(255, 0, 0, 1)",
+          backgroundColor: "rgba(255, 0, 0, 0.2)",
+          borderWidth: 2,
+          tension: 0.4,
+        },*/
       ],
     },
     options: {
@@ -1068,7 +1073,7 @@ async function createGraph(data: number[], data2: number[], n: number) {
       plugins: {
         title: {
           display: true,
-          text: "Latency of SATP Bridge (without BUNGEE)",
+          text: "Latency (without BUNGEE)",
           font: {
             size: 28, // Larger title font size
             family: "Arial",
@@ -1103,12 +1108,12 @@ async function createGraph(data: number[], data2: number[], n: number) {
                 lineWidth: 0,
                 hidden: false,
               });
-              originalLegend.push({
+              /*originalLegend.push({
                 text: `Standard Deviation: ${std.toFixed(2)}`,
                 fillStyle: "rgba(0, 0, 0, 0)", // No color (invisible box)
                 lineWidth: 0,
                 hidden: false,
-              });
+              });*/
 
               return originalLegend;
             },
@@ -1145,7 +1150,7 @@ async function createGraph(data: number[], data2: number[], n: number) {
   const imageBuffer = await chartJSNodeCanvas.renderToBuffer(configuration);
 
   // Save the image buffer to a file
-  fs.writeFileSync("./10-cctx-chart.png", imageBuffer);
+  fs.writeFileSync("./" + filename + ".png", imageBuffer);
 
-  console.log("Chart has been saved as 10-cctx-chart.png");
+  console.log("Chart has been saved");
 }

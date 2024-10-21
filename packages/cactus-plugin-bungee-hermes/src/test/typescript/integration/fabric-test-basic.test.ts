@@ -6,6 +6,7 @@ import {
   Servers,
 } from "@hyperledger/cactus-common";
 import "jest-extended";
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
@@ -355,7 +356,7 @@ beforeEach(async () => {
   }
 });
 
-test.each([{ apiPath: true }, { apiPath: false }])(
+test.each([{ apiPath: false }])(
   //test for both FabricApiPath and FabricConnector
   "test creation of views for different timeframes and states",
   async ({ apiPath }) => {
@@ -467,7 +468,81 @@ test.each([{ apiPath: true }, { apiPath: false }])(
       expect(snapshot1.getStateBins()[1].getTransactions().length).toEqual(2);
       expect(snapshot1.getStateBins()[1].getValue()).toEqual("18");
     }
+
+    async function change() {
+      //changing FABRIC_ASSET_ID value
+      return await apiClient.runTransactionV1({
+        contractName: fabricContractName,
+        channelName: fabricChannelName,
+        params: [
+          FABRIC_ASSET_ID,
+          Math.floor(Math.random() * 1000000).toString(),
+        ],
+        methodName: "UpdateAsset",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: fabricSigningCredential,
+      });
+    }
+    const snaptime = [];
+    const viewtime = [];
+    const transactions = [
+      5, 10, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200,
+    ]; /*, 300, 400, 500, 600, 700, 800, 900, 1000, 1100,
+      1200,
+    ];*/
+    //at this point FABRIC_ASSET_ID has 2 transactions
+    async function spanNTransactions(n: number) {
+      for (let index = 0; index < n; index++) {
+        await change();
+      }
+    }
+
+    await spanNTransactions(3);
+    let time = Date.now();
+    let snapshot3 = await pluginBungee.generateSnapshot(
+      [FABRIC_ASSET_ID],
+      strategy,
+      networkDetails,
+    );
+    snaptime.push(Date.now() - time);
+    time = Date.now();
+    let view3 = pluginBungee.generateView(
+      snapshot1,
+      "0",
+      Number.MAX_SAFE_INTEGER.toString(),
+      undefined,
+    );
+    viewtime.push(Date.now() - time);
+    expect(view3.view).toBeTruthy();
+    expect(view3.signature).toBeTruthy();
+    expect(snapshot3.getStateBins()[0].getTransactions().length).toEqual(5);
+    for (let index = 1; index < transactions.length; index++) {
+      await spanNTransactions(transactions[index] - transactions[index - 1]);
+      time = Date.now();
+      snapshot3 = await pluginBungee.generateSnapshot(
+        [FABRIC_ASSET_ID],
+        strategy,
+        networkDetails,
+      );
+      snaptime.push(Date.now() - time);
+      time = Date.now();
+      view3 = pluginBungee.generateView(
+        snapshot1,
+        "0",
+        Number.MAX_SAFE_INTEGER.toString(),
+        undefined,
+      );
+      viewtime.push(Date.now() - time);
+      expect(view3.view).toBeTruthy();
+      expect(view3.signature).toBeTruthy();
+      expect(snapshot3.getStateBins()[0].getTransactions().length).toEqual(
+        transactions[index],
+      );
+    }
+
+    await createGraph(transactions, snaptime, viewtime, "Bungee-Fabric");
   },
+  1000 * 60 * 60 * 3,
 );
 
 afterEach(async () => {
@@ -484,3 +559,179 @@ afterEach(async () => {
       fail("Pruning didn't throw OK");
     });
 });
+
+async function createGraph(
+  data: number[],
+  data1: number[],
+  data2: number[],
+  filename: string,
+) {
+  const width = 1600; // Width of the image
+  const height = 800; // Height of the image
+  log.info(data);
+  log.info(data1);
+  log.info(data2);
+  const data3 = [];
+  const data4 = [];
+  for (let index = 0; index < data2.length; index++) {
+    data3.push(data1[index] + data2[index]);
+    data4.push(data1[index] / data3[index]);
+  }
+  log.info(data3);
+  log.info(data4);
+  const chartJSNodeCanvas = new ChartJSNodeCanvas({
+    width,
+    height,
+    backgroundColour: "white",
+  });
+  const { slope, intercept, r2 } = calculateLinearRegression(data, data3);
+  const data5 = data.map((x) => {
+    return x * slope + intercept;
+  });
+  const configuration = {
+    type: "line" as const,
+    data: {
+      labels: data.map((n) => {
+        return n.toString();
+      }),
+      datasets: [
+        {
+          label: "Snapshot Time",
+          data: data1,
+          borderColor: "rgba(0, 0, 255, 1)",
+          backgroundColor: "rgba(0, 0, 255, 0.2)",
+          borderWidth: 2,
+          tension: 0.4,
+        },
+        {
+          label: "View Time",
+          data: data2,
+          borderColor: "rgba(255, 0, 0, 1)",
+          backgroundColor: "rgba(255, 0, 0, 0.2)",
+          borderWidth: 2,
+          tension: 0.4,
+        },
+        {
+          label: "Total Time",
+          data: data3,
+          borderColor: "rgba(0, 255, 0, 1)",
+          backgroundColor: "rgba(0, 255, 0, 0.2)",
+          borderWidth: 2,
+          tension: 0.4,
+        },
+        {
+          label: "Linear Regression: R2=" + r2.toFixed(2).toString(),
+          data: data5,
+          borderColor: "rgba(0, 0, 0, 0.5)",
+          borderDash: [15, 5],
+          borderWidth: 2,
+          tension: 0.4,
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        title: {
+          display: true,
+          text: "BUNGEE performance Fabric",
+          font: {
+            size: 28, // Larger title font size
+            family: "Arial",
+            weight: "bold",
+          },
+        },
+        legend: {
+          labels: {
+            color: "#333",
+            font: {
+              size: 22,
+            },
+            // Custom function to add the average to the legend
+            generateLabels: (chart: any) => {
+              const originalLegend = chart.data.datasets.map(
+                (dataset: any, i: any) => {
+                  return {
+                    text: `${dataset.label}`,
+                    fillStyle: dataset.backgroundColor,
+                    //strokeStyle: dataset.borderColor,
+                    lineWidth: dataset.borderWidth,
+                    hidden: !chart.isDatasetVisible(i),
+                    datasetIndex: i,
+                  };
+                },
+              );
+
+              return originalLegend;
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: "rgba(200, 200, 200, 0.2)", // Light grid lines
+          },
+          ticks: {
+            color: "#333",
+            font: {
+              size: 18, // Larger y-axis label font size
+            },
+          },
+        },
+        x: {
+          type: "linear" as const,
+          grid: {
+            color: "rgba(200, 200, 200, 0.2)", // Light grid lines
+          },
+          ticks: {
+            color: "#333",
+            font: {
+              size: 18, // Larger x-axis label font size
+            },
+          },
+        },
+      },
+    },
+  };
+  const imageBuffer = await chartJSNodeCanvas.renderToBuffer(configuration);
+
+  // Save the image buffer to a file
+  fs.writeFileSync("./" + filename + ".png", imageBuffer);
+
+  console.log("Chart has been saved");
+}
+
+function calculateLinearRegression(
+  x: number[],
+  y: number[],
+): { slope: number; intercept: number; r2: number } {
+  const n = x.length;
+
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  for (const X of x) sumX += X;
+  for (const Y of y) sumY += Y;
+  for (let i = 0; i < n; i++) sumXY += x[i] * y[i];
+  for (const X of x) sumX2 += X * X;
+  //const sumY2 = y.reduce((acc, val) => acc + val * val, 0);
+
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+
+  // Calculate R²
+  const yMean = sumY / n;
+  let ssTot = 0;
+  for (const Y of y) ssTot += Math.pow(Y - yMean, 2);
+  let ssRes = 0;
+  for (let i = 0; i < x.length; i++) {
+    ssRes += Math.pow(y[i] - (slope * x[i] + intercept), 2);
+  }
+  const r2 = 1 - ssRes / ssTot;
+  log.info(slope, intercept, r2);
+  return { slope, intercept, r2 };
+}

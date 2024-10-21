@@ -324,23 +324,26 @@ export class FabricBridge implements NetworkBridge {
       signingCredential: this.config.signingCredential,
       contractName: this.config.contractName,
       channelName: this.config.channelName,
-      participant: "Org1MSP",
+      participant: "Org2MSP",
     };
+    try {
+      const snapshot = await this.bungee.generateSnapshot(
+        [assetId],
+        this.network,
+        networkDetails,
+      );
 
-    const snapshot = await this.bungee.generateSnapshot(
-      [assetId],
-      this.network,
-      networkDetails,
-    );
-
-    const generated = this.bungee.generateView(
-      snapshot,
-      "0",
-      Number.MAX_SAFE_INTEGER.toString(),
-      undefined,
-    );
-
-    return JSON.stringify(generated);
+      const generated = this.bungee.generateView(
+        snapshot,
+        "0",
+        Number.MAX_SAFE_INTEGER.toString(),
+        undefined,
+      );
+      return JSON.stringify(generated);
+    } catch (error) {
+      console.error(error);
+      return "";
+    }
   }
 
   private interactionList(jsonString: string): InteractionSignature[] {
