@@ -29,6 +29,7 @@ import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-he
 import { BesuConfig } from "../../../../main/typescript/types/blockchain-interaction";
 import SATPInteraction from "../../../solidity/satp-erc20-interact.json";
 import { ClaimFormat } from "../../../../main/typescript/generated/proto/cacti/satp/v02/common/message_pb";
+import { SupportedChain } from "../../../../main/typescript/core/types";
 
 const logLevel: LogLevelDesc = "DEBUG";
 
@@ -212,7 +213,8 @@ beforeAll(async () => {
     };
 
     besuConfig = {
-      network: "BESU",
+      networkType: SupportedChain.BESU,
+      network: "Network_BESU",
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount.address,

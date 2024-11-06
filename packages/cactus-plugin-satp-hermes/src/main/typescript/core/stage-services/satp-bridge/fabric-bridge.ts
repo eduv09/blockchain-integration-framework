@@ -14,22 +14,19 @@ import { stringify as safeStableStringify } from "safe-stable-stringify";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { PrivacyPolicyOpts } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/generated/openapi/typescript-axios";
 import { FabricAsset, getVarTypes } from "./types/fabric-asset";
-import {
-  Logger,
-  LogLevelDesc,
-  LoggerProvider,
-} from "@hyperledger/cactus-common";
+import { Logger, LoggerProvider } from "@hyperledger/cactus-common";
 import { NetworkBridge } from "./network-bridge";
 import { InteractionSignature } from "./types/fabric-asset";
 import { InteractionData } from "./types/interact";
 import { getInteractionType } from "./types/asset";
 import { OntologyError, TransactionError } from "../../errors/bridge-erros";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
+import { SupportedChain } from "../../types";
 
 export class FabricBridge implements NetworkBridge {
   public static readonly CLASS_NAME = "FabricBridge";
-
-  network: string = "FABRIC";
+  network: string;
+  networkType: SupportedChain = SupportedChain.FABRIC;
   claimFormat: ClaimFormat;
 
   public log: Logger;
@@ -39,13 +36,14 @@ export class FabricBridge implements NetworkBridge {
   options: IPluginLedgerConnectorFabricOptions;
   config: FabricConfig;
 
-  constructor(fabricConfig: FabricConfig, level?: LogLevelDesc) {
+  constructor(fabricConfig: FabricConfig) {
     this.config = fabricConfig;
     this.options = fabricConfig.options;
     this.connector = new PluginLedgerConnectorFabric(fabricConfig.options);
     this.claimFormat = fabricConfig.claimFormat;
     this.bungee = new PluginBungeeHermes(fabricConfig.bungeeOptions);
-    level = level || "INFO";
+    const level = fabricConfig.logLevel || "INFO";
+    this.network = fabricConfig.network;
     this.bungee.addStrategy(this.network, new StrategyFabric(level));
     this.log = LoggerProvider.getOrCreate({
       label: StrategyFabric.CLASS_NAME,
@@ -276,6 +274,9 @@ export class FabricBridge implements NetworkBridge {
 
   public networkName(): string {
     return this.network;
+  }
+  public networkTypeName(): SupportedChain {
+    return this.networkType;
   }
 
   public async runTransaction(

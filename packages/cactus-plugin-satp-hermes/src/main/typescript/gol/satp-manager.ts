@@ -51,7 +51,7 @@ export interface ISATPManagerOptions {
   sessions?: Map<string, SATPSession>;
   signer: JsObjectSigner;
   pubKey: string;
-  supportedDLTs: SupportedChain[];
+  connectedDLTs: string[];
   bridgeManager: SATPBridgesManager;
   orchestrator: GatewayOrchestrator;
 }
@@ -62,7 +62,7 @@ export class SATPManager {
   private readonly instanceId: string;
   private endpoints: any[] | undefined;
   private signer: JsObjectSigner;
-  public supportedDLTs: SupportedChain[] = [];
+  public connectedDLTs: string[] = [];
   private sessions: Map<string, SATPSession>;
   // maps stage to client/service and service class
   private readonly satpServices: Map<
@@ -87,7 +87,7 @@ export class SATPManager {
     this.logger = LoggerProvider.getOrCreate({ level, label });
     this.instanceId = options.instanceId;
     this.logger.info(`Instantiated ${this.className} OK`);
-    this.supportedDLTs = options.supportedDLTs;
+    this.connectedDLTs = options.connectedDLTs;
     this.signer = options.signer;
     this.bridgesManager = options.bridgeManager;
     this.orchestrator = options.orchestrator;
@@ -177,8 +177,8 @@ export class SATPManager {
     return this.sessions.get(sessionId);
   }
 
-  get SupportedDLTs(): SupportedChain[] {
-    return this.supportedDLTs;
+  get connectedDLTIds(): string[] {
+    return this.connectedDLTs;
   }
 
   public getSATPHandler(type: SATPHandlerType): SATPHandler | undefined {
@@ -298,7 +298,7 @@ export class SATPManager {
           sessions: this.sessions,
           serverService: serverService,
           clientService: clientService,
-          supportedDLTs: this.supportedDLTs,
+          connectedDLTs: this.connectedDLTs,
           pubkeys: this.gatewaysPubKeys,
           gatewayId: this.orchestrator.ourGateway.id,
           stage: serviceIndex,

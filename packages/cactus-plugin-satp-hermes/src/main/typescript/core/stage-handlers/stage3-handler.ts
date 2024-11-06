@@ -9,7 +9,6 @@ import {
 } from "../../generated/proto/cacti/satp/v02/stage_3_pb";
 import { Stage3ServerService } from "../stage-services/server/stage3-server-service";
 import { SATPSession } from "../satp-session";
-import { SupportedChain } from "../types";
 import {
   SATPHandler,
   SATPHandlerOptions,
@@ -32,14 +31,14 @@ export class Stage3SATPHandler implements SATPHandler {
   private sessions: Map<string, SATPSession>;
   private clientService: Stage3ClientService;
   private serverService: Stage3ServerService;
-  private supportedDLTs: SupportedChain[];
+  private supportedDLTs: string[];
   private logger: Logger;
 
   constructor(ops: SATPHandlerOptions) {
     this.sessions = ops.sessions;
     this.serverService = ops.serverService as Stage3ServerService;
     this.clientService = ops.clientService as Stage3ClientService;
-    this.supportedDLTs = ops.supportedDLTs;
+    this.supportedDLTs = ops.connectedDLTs;
     this.logger = LoggerProvider.getOrCreate(ops.loggerOptions);
     this.logger.trace(`Initialized ${Stage3SATPHandler.CLASS_NAME}`);
   }

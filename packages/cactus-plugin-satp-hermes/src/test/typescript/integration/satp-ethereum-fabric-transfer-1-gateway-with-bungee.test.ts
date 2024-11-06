@@ -278,7 +278,8 @@ beforeAll(async () => {
     };
 
     ethereumConfig = {
-      network: SupportedChain.EVM,
+      networkType: SupportedChain.EVM,
+      network: "Network_EVM",
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount,
@@ -894,7 +895,8 @@ beforeAll(async () => {
     };
 
     fabricConfig = {
-      network: SupportedChain.FABRIC,
+      networkType: SupportedChain.FABRIC,
+      network: "Network_FABRIC",
       signingCredential: bridgeFabricSigningCredential,
       channelName: fabricChannelName,
       contractName: satpWrapperContractName,
@@ -930,7 +932,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
           Crash: "v02",
         },
       ],
-      supportedDLTs: [SupportedChain.FABRIC, SupportedChain.EVM],
+      connectedNetworks: ["Network_FABRIC", "Network_EVM"],
       proofID: "mockProofID10",
       address: "http://localhost" as Address,
     } as GatewayIdentity;
@@ -969,8 +971,8 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     };
     const req: TransactRequest = {
       contextID: "mockContext",
-      fromDLTNetworkID: SupportedChain.EVM,
-      toDLTNetworkID: SupportedChain.FABRIC,
+      fromDLTNetworkID: "Network_EVM",
+      toDLTNetworkID: "Network_FABRIC",
       fromAmount: "100",
       toAmount: "1",
       originatorPubkey: WHALE_ACCOUNT_ADDRESS,

@@ -19,9 +19,8 @@ import { EthereumBridge } from "../core/stage-services/satp-bridge/ethereum-brid
 
 export interface ISATPBridgesOptions {
   logLevel?: LogLevelDesc;
-  networks: NetworkConfig[];
+  networks: NetworkConfig[] | NetworkBridge[];
   validationOptions?: ValidatorOptions;
-  supportedDLTs: SupportedChain[];
 }
 
 export class SATPBridgesManager {
@@ -31,6 +30,8 @@ export class SATPBridgesManager {
     string,
     SATPBridgeManager
   >();
+
+  private supportedNetworks: SupportedChain[] = [];
 
   log: Logger;
 
@@ -48,15 +49,19 @@ export class SATPBridgesManager {
 
     config.networks.map((bridgeConfig) => {
       let bridge: NetworkBridge;
-      switch (bridgeConfig.network) {
+      if (!(bridgeConfig instanceof NetworkBridge)) {
+        this.addBridgeFromConfig(bridgeConfig);
+        return;
+      }
+      switch (bridgeConfig.networkType) {
         case SupportedChain.FABRIC:
-          bridge = new FabricBridge(bridgeConfig as FabricConfig, this.level);
+          bridge = bridgeConfig as FabricBridge;
           break;
         case SupportedChain.BESU:
-          bridge = new BesuBridge(bridgeConfig as BesuConfig);
+          bridge = bridgeConfig as BesuBridge;
           break;
         case SupportedChain.EVM:
-          bridge = new EthereumBridge(bridgeConfig as EthereumConfig);
+          bridge = bridgeConfig as EthereumBridge;
           break;
         default:
           throw new Error(`Unsupported network: ${bridgeConfig.network}`);
@@ -68,34 +73,43 @@ export class SATPBridgesManager {
       };
       const satp = new SATPBridgeManager(config);
       this.bridges.set(bridgeConfig.network, satp);
+      this.addSupportedNetwork(bridge.networkTypeName());
     });
   }
-
+  public getReachableNetworks() {
+    return this.bridges.keys();
+  }
   public getBridge(network: string): SATPBridgeManager {
     if (!this.bridges.has(network)) {
       throw new Error(`Bridge for network ${network} not found`);
     }
-    return this.bridges.get(network) as SATPBridgeManager;
+    const bridge = this.bridges.get(network) as SATPBridgeManager;
+    return bridge;
   }
 
+  public addSupportedNetwork(networkType: SupportedChain) {
+    if (!this.supportedNetworks.includes(networkType)) {
+      this.supportedNetworks.push(networkType);
+    }
+  }
+  public getSupportedNetworkTypes() {
+    return this.supportedNetworks;
+  }
   public getBridgesList(): string[] {
     return Array.from(this.bridges.keys());
   }
 
   public addBridgeFromConfig(networkConfig: NetworkConfig) {
     let bridge: NetworkBridge;
-    switch (networkConfig.network) {
+    switch (networkConfig.networkType) {
       case SupportedChain.FABRIC:
-        bridge = new FabricBridge(networkConfig as FabricConfig, this.level);
+        bridge = new FabricBridge(networkConfig as FabricConfig);
         break;
       case SupportedChain.BESU:
-        bridge = new BesuBridge(networkConfig as BesuConfig, this.level);
+        bridge = new BesuBridge(networkConfig as BesuConfig);
         break;
       case SupportedChain.EVM:
-        bridge = new EthereumBridge(
-          networkConfig as EthereumConfig,
-          this.level,
-        );
+        bridge = new EthereumBridge(networkConfig as EthereumConfig);
         break;
       default:
         throw new Error(`Unsupported network: ${networkConfig.network}`);

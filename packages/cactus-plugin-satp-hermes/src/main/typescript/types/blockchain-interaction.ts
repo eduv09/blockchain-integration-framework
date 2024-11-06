@@ -18,6 +18,8 @@ import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-he
 import { EvmAsset } from "../core/stage-services/satp-bridge/types/evm-asset";
 import { FabricAsset } from "../core/stage-services/satp-bridge/types/fabric-asset";
 import { ClaimFormat } from "../generated/proto/cacti/satp/v02/common/message_pb";
+import { LogLevelDesc } from "@hyperledger/cactus-common";
+import { SupportedChain } from "../core/types";
 
 // inject gateway, get connectors
 export type SATPLedgerConnector = string;
@@ -26,7 +28,9 @@ export type SATPLedgerConnector = string;
 
 export interface NetworkConfig {
   network: string;
+  networkType: SupportedChain;
   claimFormat: ClaimFormat;
+  logLevel?: LogLevelDesc;
 }
 export interface FabricConfig extends NetworkConfig {
   signingCredential: FabricSigningCredential;

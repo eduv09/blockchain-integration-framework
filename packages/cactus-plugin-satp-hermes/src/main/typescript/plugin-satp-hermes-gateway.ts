@@ -19,12 +19,7 @@ import {
 
 import path from "path";
 
-import {
-  SATPGatewayConfig,
-  GatewayIdentity,
-  ShutdownHook,
-  SupportedChain,
-} from "./core/types";
+import { SATPGatewayConfig, GatewayIdentity, ShutdownHook } from "./core/types";
 import {
   GatewayOrchestrator,
   IGatewayOrchestratorOptions,
@@ -74,7 +69,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
 
   @IsString()
   public readonly instanceId: string;
-  private supportedDltIDs: SupportedChain[];
+  private supportedDltIDs: string[];
   private gatewayOrchestrator: GatewayOrchestrator;
   private bridgesManager: SATPBridgesManager;
 
@@ -129,7 +124,6 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
 
     const bridgesManagerOptions: ISATPBridgesOptions = {
       logLevel: this.config.logLevel,
-      supportedDLTs: this.config.gid!.supportedDLTs,
       networks: options.bridgesConfig ? options.bridgesConfig : [],
     };
 
@@ -161,7 +155,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
       pubKey: this.pubKey,
     };
 
-    this.supportedDltIDs = this.config.gid!.supportedDLTs;
+    this.supportedDltIDs = this.config.gid!.connectedNetworks;
 
     if (!this.config.gid || !dispatcherOps.instanceId) {
       throw new Error("Invalid configuration");
@@ -279,11 +273,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
             Crash: "v02",
           },
         ],
-        supportedDLTs: [
-          SupportedChain.FABRIC,
-          SupportedChain.BESU,
-          SupportedChain.EVM,
-        ],
+        connectedNetworks: [],
         proofID: "mockProofID1",
         gatewayServerPort: DEFAULT_PORT_GATEWAY_SERVER,
         gatewayClientPort: DEFAULT_PORT_GATEWAY_CLIENT,
@@ -314,12 +304,8 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
         ];
       }
 
-      if (!pluginOptions.gid.supportedDLTs) {
-        pluginOptions.gid.supportedDLTs = [
-          SupportedChain.FABRIC,
-          SupportedChain.BESU,
-          SupportedChain.EVM,
-        ];
+      if (!pluginOptions.gid.connectedNetworks) {
+        pluginOptions.gid.connectedNetworks = [];
       }
 
       if (!pluginOptions.gid.proofID) {

@@ -57,7 +57,7 @@ export class Stage1ClientService extends SATPService {
 
   async transferProposalRequest(
     session: SATPSession,
-    supportedDLTs: SupportedChain[],
+    supportedDLTs: string[],
   ): Promise<void | TransferProposalRequestMessage> {
     const stepTag = `transferProposalRequest()`;
     const fnTag = `${this.getServiceIdentifier()}#${stepTag}`;

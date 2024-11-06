@@ -9,7 +9,6 @@ import {
 import {
   GatewayIdentity,
   GatewayChannel,
-  SupportedChain,
   SATPServiceInstance,
 } from "../core/types";
 import {
@@ -150,10 +149,10 @@ export class GatewayOrchestrator {
     return this.counterPartyGateways.get(id);
   }
 
-  public getChannel(dlt: SupportedChain): GatewayChannel {
+  public getChannel(dlt: string): GatewayChannel {
     const channels = Array.from(this.channels.values());
     const channel = channels.find((channel) => {
-      return channel.supportedDLTs.includes(dlt);
+      return channel.connectedNetworks.includes(dlt);
     });
     if (!channel) {
       throw new Error(
@@ -236,8 +235,8 @@ export class GatewayOrchestrator {
     return connected;
   }
 
-  get supportedDLTs(): SupportedChain[] {
-    return this.localGateway.supportedDLTs;
+  get connectedDLTs(): string[] {
+    return this.localGateway.connectedNetworks;
   }
 
   createChannel(identity: GatewayIdentity): GatewayChannel {
@@ -248,10 +247,10 @@ export class GatewayOrchestrator {
       toGatewayID: identity.id,
       sessions: new Map(),
       clients: clients,
-      supportedDLTs: identity.supportedDLTs,
+      connectedNetworks: identity.connectedNetworks,
     };
     this.logger.info(
-      `Created channel to gateway ${identity.id} \n supported DLTs: ${identity.supportedDLTs}`,
+      `Created channel to gateway ${identity.id} \n supported DLTs: ${identity.connectedNetworks}`,
     );
     return channel;
   }

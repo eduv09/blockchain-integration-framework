@@ -9,7 +9,6 @@ import {
 import { SATPSession } from "../satp-session";
 import { Stage1ServerService } from "../stage-services/server/stage1-server-service";
 import { Stage1ClientService } from "../stage-services/client/stage1-client-service";
-import { SupportedChain } from "../types";
 import {
   SATPHandler,
   SATPHandlerOptions,
@@ -31,14 +30,14 @@ export class Stage1SATPHandler implements SATPHandler {
   private sessions: Map<string, SATPSession>;
   private serverService: Stage1ServerService;
   private clientService: Stage1ClientService;
-  private supportedDLTs: SupportedChain[];
+  private supportedDLTs: string[];
   private logger: Logger;
 
   constructor(ops: SATPHandlerOptions) {
     this.sessions = ops.sessions;
     this.serverService = ops.serverService as Stage1ServerService;
     this.clientService = ops.clientService as Stage1ClientService;
-    this.supportedDLTs = ops.supportedDLTs;
+    this.supportedDLTs = ops.connectedDLTs;
     this.logger = LoggerProvider.getOrCreate(ops.loggerOptions);
     this.logger.trace(`Initialized ${Stage1SATPHandler.CLASS_NAME}`);
   }

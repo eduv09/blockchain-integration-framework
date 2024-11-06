@@ -47,7 +47,7 @@ export type GatewayChannel = {
   fromGatewayID: string;
   toGatewayID: string;
   sessions: Map<string, SATPSession>;
-  supportedDLTs: SupportedChain[];
+  connectedNetworks: string[];
   clients: Map<string, PromiseConnectClient<SATPServiceInstance>>;
 };
 
@@ -61,7 +61,7 @@ export type GatewayIdentity = {
   pubKey?: string;
   name?: string;
   version: DraftVersions[];
-  supportedDLTs: SupportedChain[];
+  connectedNetworks: string[];
   proofID?: string;
   gatewayServerPort?: number;
   gatewayClientPort?: number;

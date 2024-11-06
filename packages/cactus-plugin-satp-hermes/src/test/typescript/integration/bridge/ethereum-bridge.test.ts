@@ -199,7 +199,8 @@ beforeAll(async () => {
     };
 
     ethereumConfig = {
-      network: SupportedChain.EVM,
+      networkType: SupportedChain.EVM,
+      network: "Network_EVM",
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount,

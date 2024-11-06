@@ -47,6 +47,7 @@ import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-he
 import { TokenType } from "../../../../main/typescript/core/stage-services/satp-bridge/types/asset";
 import SATPInteraction from "../../../../test/typescript/fabric/satp-erc20-interact.json";
 import { ClaimFormat } from "../../../../main/typescript/generated/proto/cacti/satp/v02/common/message_pb";
+import { SupportedChain } from "../../../../main/typescript/core/types";
 let fabricServer: Server;
 
 let fabricSigningCredential: FabricSigningCredential;
@@ -652,7 +653,8 @@ beforeAll(async () => {
     };
 
     fabricConfig = {
-      network: "FABRIC",
+      networkType: SupportedChain.FABRIC,
+      network: "Network_FABRIC",
       signingCredential: bridgeFabricSigningCredential,
       channelName: fabricChannelName,
       contractName: satpWrapperContractName,
@@ -673,7 +675,7 @@ beforeAll(async () => {
 
 describe("Fabric Bridge Test", () => {
   it("Should Initialize the bridge", async () => {
-    fabricBridge = new FabricBridge(fabricConfig, logLevel);
+    fabricBridge = new FabricBridge(fabricConfig);
     expect(fabricBridge).not.toBeUndefined();
 
     bridgeId = await fabricBridge.getClientId();

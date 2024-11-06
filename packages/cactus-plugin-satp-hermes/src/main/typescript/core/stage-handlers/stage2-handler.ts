@@ -2,7 +2,6 @@ import { ConnectRouter, HandlerContext } from "@connectrpc/connect";
 import { SatpStage2Service } from "../../generated/proto/cacti/satp/v02/stage_2_connect";
 import { Stage2ServerService } from "../stage-services/server/stage2-server-service";
 import { SATPSession } from "../satp-session";
-import { SupportedChain } from "../types";
 import {
   SATPHandler,
   SATPHandlerOptions,
@@ -27,14 +26,14 @@ export class Stage2SATPHandler implements SATPHandler {
   private sessions: Map<string, SATPSession>;
   private serverService: Stage2ServerService;
   private clientService: Stage2ClientService;
-  private supportedDLTs: SupportedChain[];
+  private supportedDLTs: string[];
   private logger: Logger;
 
   constructor(ops: SATPHandlerOptions) {
     this.sessions = ops.sessions;
     this.serverService = ops.serverService as Stage2ServerService;
     this.clientService = ops.clientService as Stage2ClientService;
-    this.supportedDLTs = ops.supportedDLTs;
+    this.supportedDLTs = ops.connectedDLTs;
     this.logger = LoggerProvider.getOrCreate(ops.loggerOptions);
     this.logger.trace(`Initialized ${Stage2SATPHandler.CLASS_NAME}`);
   }

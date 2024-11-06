@@ -724,7 +724,8 @@ beforeAll(async () => {
     };
 
     fabricConfig = {
-      network: SupportedChain.FABRIC,
+      networkType: SupportedChain.FABRIC,
+      network: "Network_FABRIC",
       signingCredential: bridgeFabricSigningCredential,
       channelName: fabricChannelName,
       contractName: satpWrapperContractName,
@@ -876,7 +877,8 @@ beforeAll(async () => {
     };
 
     besuConfig = {
-      network: SupportedChain.BESU,
+      networkType: SupportedChain.BESU,
+      network: "Network_BESU",
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount.address,
@@ -962,7 +964,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
           Crash: "v02",
         },
       ],
-      supportedDLTs: [SupportedChain.BESU],
+      connectedNetworks: ["Network_BESU"],
       proofID: "mockProofID10",
       address: "http://localhost" as Address,
     } as GatewayIdentity;
@@ -979,7 +981,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
           Crash: "v02",
         },
       ],
-      supportedDLTs: [SupportedChain.FABRIC],
+      connectedNetworks: ["Network_FABRIC"],
       proofID: "mockProofID11",
       address: "http://localhost" as Address,
       gatewayServerPort: 3110,
@@ -1005,7 +1007,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
               Crash: "v02",
             },
           ],
-          supportedDLTs: [SupportedChain.FABRIC],
+          connectedNetworks: ["Network_FABRIC"],
           proofID: "mockProofID11",
           address: "http://localhost" as Address,
           gatewayServerPort: 3110,
@@ -1032,7 +1034,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
               Crash: "v02",
             },
           ],
-          supportedDLTs: [SupportedChain.BESU],
+          connectedNetworks: ["Network_BESU"],
           proofID: "mockProofID10",
           address: "http://localhost" as Address,
         },
@@ -1080,8 +1082,8 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
     };
     const req = {
       contextID: "mockContext",
-      fromDLTNetworkID: SupportedChain.BESU,
-      toDLTNetworkID: SupportedChain.FABRIC,
+      fromDLTNetworkID: "Network_BESU",
+      toDLTNetworkID: "Network_FABRIC",
       fromAmount: "100",
       toAmount: "1",
       originatorPubkey: assigneeEthAccount.address,

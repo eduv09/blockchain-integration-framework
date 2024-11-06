@@ -10,10 +10,7 @@ import {
   PluginImportType,
 } from "@hyperledger/cactus-core-api";
 
-import {
-  SATPGatewayConfig,
-  SupportedChain,
-} from "../../../main/typescript/core/types";
+import { SATPGatewayConfig } from "../../../main/typescript/core/types";
 import { createClient } from "../test-utils";
 
 const logLevel: LogLevelDesc = "DEBUG";
@@ -52,7 +49,7 @@ describe("GetStatus Endpoint and Functionality testing", () => {
             Crash: "v1",
           },
         ],
-        supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+        connectedNetworks: ["Network_FABRIC", "Network_BESU"],
         proofID: "mockProofID10",
         gatewayServerPort: 3010,
         gatewayClientPort: 3011,

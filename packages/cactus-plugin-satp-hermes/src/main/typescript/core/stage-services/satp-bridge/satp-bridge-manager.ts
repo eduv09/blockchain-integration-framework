@@ -3,7 +3,7 @@
 // should inject satp gateway session data (having parameters/chains for transactions), and processes smart contract output
 import { BridgeManager } from "./bridge-manager";
 import { Logger, LoggerProvider } from "@hyperledger/cactus-common";
-import { SATPBridgeConfig } from "../../types";
+import { SATPBridgeConfig, SupportedChain } from "../../types";
 import { Asset } from "./types/asset";
 import { TransactionIdUndefinedError } from "../../errors/bridge-erros";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
@@ -21,7 +21,9 @@ export class SATPBridgeManager implements BridgeManager {
     const label = SATPBridgeManager.CLASS_NAME;
     this._log = LoggerProvider.getOrCreate({ level: config.logLevel, label });
   }
-
+  public getCapability(): SupportedChain {
+    return this.config.network.networkTypeName();
+  }
   public async wrapAsset(asset: Asset): Promise<string> {
     const fnTag = `${this.className}#wrap()`;
 

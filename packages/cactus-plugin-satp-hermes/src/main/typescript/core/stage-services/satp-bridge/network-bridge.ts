@@ -1,13 +1,18 @@
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
 import { TransactionResponse } from "../../../types/blockchain-interaction";
+import { SupportedChain } from "../../types";
 import { Asset } from "./types/asset";
 
 export abstract class NetworkBridge {
   network!: string;
+  networkType!: SupportedChain;
   claimFormat!: ClaimFormat;
 
   public networkName(): string {
     return this.network;
+  }
+  public networkTypeName(): SupportedChain {
+    return this.networkType;
   }
 
   public abstract wrapAsset(asset: Asset): Promise<TransactionResponse>;

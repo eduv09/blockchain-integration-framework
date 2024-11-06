@@ -1,4 +1,4 @@
-import { GatewayIdentity, SupportedChain } from "../core/types";
+import { GatewayIdentity } from "../core/types";
 import { Logger } from "@hyperledger/cactus-common";
 
 // gets an ID, queries a repository, returns a gateway identity
@@ -21,11 +21,7 @@ export async function resolveGatewayID(
           Crash: "1.0",
         },
       ],
-      supportedDLTs: [
-        SupportedChain.FABRIC,
-        SupportedChain.BESU,
-        SupportedChain.EVM,
-      ],
+      connectedNetworks: ["FABRIC_NETWORK_ID"],
       proofID: "mockProofID1",
       gatewayServerPort: 3011,
       address: "http://localhost",
@@ -40,11 +36,7 @@ export async function resolveGatewayID(
           Crash: "1.0",
         },
       ],
-      supportedDLTs: [
-        SupportedChain.FABRIC,
-        SupportedChain.BESU,
-        SupportedChain.EVM,
-      ],
+      connectedNetworks: ["EVM_NETWORK_ID"],
       proofID: "mockProofID1",
       gatewayServerPort: 3012,
       address: "http://localhost",

@@ -724,7 +724,8 @@ beforeAll(async () => {
     };
 
     fabricConfig = {
-      network: SupportedChain.FABRIC,
+      network: "Network_FABRIC",
+      networkType: SupportedChain.FABRIC,
       signingCredential: bridgeFabricSigningCredential,
       channelName: fabricChannelName,
       contractName: satpWrapperContractName,
@@ -876,7 +877,8 @@ beforeAll(async () => {
     };
 
     besuConfig = {
-      network: SupportedChain.BESU,
+      networkType: SupportedChain.BESU,
+      network: "Network_BESU",
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount.address,
@@ -962,7 +964,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
           Crash: "v02",
         },
       ],
-      supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+      connectedNetworks: ["network_FABRIC", "network_BESU"],
       proofID: "mockProofID10",
       address: "http://localhost" as Address,
     } as GatewayIdentity;

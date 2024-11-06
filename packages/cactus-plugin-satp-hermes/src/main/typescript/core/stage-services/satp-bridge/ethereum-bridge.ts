@@ -25,6 +25,7 @@ import { getInteractionType } from "./types/asset";
 import { InteractionData } from "./types/interact";
 import { OntologyError, TransactionError } from "../../errors/bridge-erros";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
+import { SupportedChain } from "../../types";
 
 interface EthereumResponse {
   success: boolean;
@@ -34,7 +35,8 @@ interface EthereumResponse {
 export class EthereumBridge implements NetworkBridge {
   public static readonly CLASS_NAME = "EthereumBridge";
 
-  network: string = "ETHEREUM";
+  network: string;
+  networkType: SupportedChain = SupportedChain.EVM;
   claimFormat: ClaimFormat;
   public log: Logger;
 
@@ -53,6 +55,7 @@ export class EthereumBridge implements NetworkBridge {
     this.claimFormat = ethereumConfig.claimFormat;
     this.connector = new PluginLedgerConnectorEthereum(ethereumConfig.options);
     this.bungee = new PluginBungeeHermes(ethereumConfig.bungeeOptions);
+    this.network = ethereumConfig.network;
     this.bungee.addStrategy(this.network, new StrategyEthereum(level));
 
     //TODO is this needed?
@@ -298,6 +301,9 @@ export class EthereumBridge implements NetworkBridge {
 
   public networkName(): string {
     return this.network;
+  }
+  public networkTypeName(): SupportedChain {
+    return this.networkType;
   }
 
   public async runTransaction(

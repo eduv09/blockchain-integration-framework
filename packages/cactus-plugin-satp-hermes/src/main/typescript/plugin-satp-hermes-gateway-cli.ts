@@ -2,7 +2,7 @@
 
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { SATPGateway, SATPGatewayConfig } from "./plugin-satp-hermes-gateway";
-import { SupportedChain, DraftVersions, CurrentDrafts } from "./core/types";
+import { DraftVersions, CurrentDrafts } from "./core/types";
 import dotenv from "dotenv";
 
 export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
@@ -32,10 +32,8 @@ export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
       version: env?.SATP_GATEWAY_VERSION
         ? [parseVersion(env.SATP_GATEWAY_VERSION)]
         : [],
-      supportedDLTs:
-        env?.SATP_SUPPORTED_DLTS?.split(",").map(
-          (dlt) => dlt as SupportedChain,
-        ) || [],
+      connectedNetworks:
+        env?.SATP_SUPPORTED_DLTS?.split(",").map((dlt) => dlt as string) || [],
       proofID: env?.SATP_PROOF_ID,
       gatewayServerPort: parseInt(env?.SATP_GATEWAY_SERVER_PORT || "0", 10),
       gatewayClientPort: parseInt(env?.SATP_GATEWAY_CLIENT_PORT || "0", 10),

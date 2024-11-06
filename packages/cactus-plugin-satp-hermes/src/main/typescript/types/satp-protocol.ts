@@ -1,5 +1,4 @@
 import { ILoggerOptions } from "@hyperledger/cactus-common";
-import { SupportedChain } from "../core/types";
 import { ConnectRouter } from "@connectrpc/connect";
 import { SATPSession } from "../core/satp-session";
 import {
@@ -65,7 +64,7 @@ export interface SATPHandlerOptions {
   sessions: Map<string, SATPSession>;
   serverService: SATPService;
   clientService: SATPService;
-  supportedDLTs: SupportedChain[];
+  connectedDLTs: string[];
   pubkeys: Map<string, string>;
   gatewayId: string;
   loggerOptions: ILoggerOptions;

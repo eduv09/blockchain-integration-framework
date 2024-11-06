@@ -117,7 +117,6 @@ const sessionIDs: string[] = [];
 
 beforeAll(async () => {
   bridgeManager = new SATPBridgesManager({
-    supportedDLTs: supportedDLTs,
     networks: [],
     logLevel: logLevel,
   });
