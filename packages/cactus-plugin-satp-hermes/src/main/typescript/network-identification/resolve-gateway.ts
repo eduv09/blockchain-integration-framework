@@ -1,4 +1,5 @@
-import { GatewayIdentity, SupportedChain } from "../core/types";
+import { LedgerType } from "@hyperledger/cactus-core-api";
+import { GatewayIdentity } from "../core/types";
 import { Logger } from "@hyperledger/cactus-common";
 
 // gets an ID, queries a repository, returns a gateway identity
@@ -21,10 +22,10 @@ export async function resolveGatewayID(
           Crash: "1.0",
         },
       ],
-      supportedDLTs: [
-        SupportedChain.FABRIC,
-        SupportedChain.BESU,
-        SupportedChain.EVM,
+      reachableDLTs: [
+        { id: "BESU", ledgerType: LedgerType.Besu2X },
+        { id: "FABRIC", ledgerType: LedgerType.Fabric2 },
+        { id: "ETH", ledgerType: LedgerType.Ethereum },
       ],
       proofID: "mockProofID1",
       gatewayServerPort: 3011,
@@ -40,10 +41,10 @@ export async function resolveGatewayID(
           Crash: "1.0",
         },
       ],
-      supportedDLTs: [
-        SupportedChain.FABRIC,
-        SupportedChain.BESU,
-        SupportedChain.EVM,
+      reachableDLTs: [
+        { id: "BESU", ledgerType: LedgerType.Besu2X },
+        { id: "FABRIC", ledgerType: LedgerType.Fabric2 },
+        { id: "ETH", ledgerType: LedgerType.Ethereum },
       ],
       proofID: "mockProofID1",
       gatewayServerPort: 3012,
@@ -69,7 +70,7 @@ export function getGatewaySeeds(logger: Logger): GatewayIdentity[] {
   //         Crash: "1.0",
   //       },
   //     ],
-  //     supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+  //     reachableDLTs: [NetworkId.FABRIC, NetworkId.BESU],
   //     proofID: "mockProofID1",
   //     gatewayServerPort: 3011,
   //     address: "http://localhost",
@@ -84,7 +85,7 @@ export function getGatewaySeeds(logger: Logger): GatewayIdentity[] {
   //         Crash: "1.0",
   //       },
   //     ],
-  //     supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+  //     reachableDLTs: [NetworkId.FABRIC, NetworkId.BESU],
   //     proofID: "mockProofID1",
   //     gatewayServerPort: 3014,
   //     address: "http://localhost",

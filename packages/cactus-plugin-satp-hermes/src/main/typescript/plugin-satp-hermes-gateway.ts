@@ -17,12 +17,7 @@ import {
   Contains,
 } from "class-validator";
 
-import {
-  SATPGatewayConfig,
-  GatewayIdentity,
-  ShutdownHook,
-  SupportedChain,
-} from "./core/types";
+import { SATPGatewayConfig, GatewayIdentity, ShutdownHook } from "./core/types";
 import {
   GatewayOrchestrator,
   IGatewayOrchestratorOptions,
@@ -60,6 +55,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import * as OAS from "../json/openapi-blo-bundled.json";
+import { NetworkId } from "./network-identification/chainid-list";
 
 export class SATPGateway implements IPluginWebService, ICactusPlugin {
   // todo more checks; example port from config is between 3000 and 9000
@@ -79,7 +75,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
 
   @IsString()
   public readonly instanceId: string;
-  private supportedDltIDs: SupportedChain[];
+  private reachableDLTs: NetworkId[];
   private gatewayOrchestrator: GatewayOrchestrator;
   private bridgesManager: SATPBridgesManager;
 
@@ -137,7 +133,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
 
     const bridgesManagerOptions: ISATPBridgesOptions = {
       logLevel: this.config.logLevel,
-      supportedDLTs: this.config.gid!.supportedDLTs,
+      reachableDLTs: this.config.gid!.reachableDLTs,
       networks: options.bridgesConfig ? options.bridgesConfig : [],
     };
 
@@ -171,7 +167,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
       remoteRepository: this.remoteRepository,
     };
 
-    this.supportedDltIDs = this.config.gid!.supportedDLTs;
+    this.reachableDLTs = this.config.gid!.reachableDLTs;
 
     if (!this.config.gid || !dispatcherOps.instanceId) {
       throw new Error("Invalid configuration");
@@ -245,8 +241,8 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     return this.signer;
   }
 
-  public getSupportedDltIDs(): string[] {
-    return this.supportedDltIDs;
+  public getReachableDLTs(): NetworkId[] {
+    return this.reachableDLTs;
   }
 
   public get gatewaySigner(): JsObjectSigner {
@@ -298,7 +294,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
             Crash: SATP_CRASH_VERSION,
           },
         ],
-        supportedDLTs: [],
+        reachableDLTs: [],
         proofID: "mockProofID1",
         gatewayServerPort: DEFAULT_PORT_GATEWAY_SERVER,
         gatewayClientPort: DEFAULT_PORT_GATEWAY_CLIENT,
@@ -330,8 +326,8 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
         ];
       }
 
-      if (!pluginOptions.gid.supportedDLTs) {
-        pluginOptions.gid.supportedDLTs = [];
+      if (!pluginOptions.gid.reachableDLTs) {
+        pluginOptions.gid.reachableDLTs = [];
       }
 
       if (!pluginOptions.gid.proofID) {

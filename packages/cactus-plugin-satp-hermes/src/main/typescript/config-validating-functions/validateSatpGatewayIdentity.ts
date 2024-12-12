@@ -1,10 +1,11 @@
+import { LedgerType } from "@hyperledger/cactus-core-api";
 import {
   Address,
   CurrentDrafts,
   DraftVersions,
   GatewayIdentity,
-  SupportedChain,
 } from "../core/types";
+import { NetworkId } from "../network-identification/chainid-list";
 
 // Type guard for Address
 function isAddress(input: unknown): input is Address {
@@ -42,18 +43,20 @@ function isPrivacyDraftVersionsArray(
   return Array.isArray(input) && input.every(isDraftVersions);
 }
 
-// Type guard for SupportedChain
-export function isSupportedChain(obj: unknown): obj is SupportedChain {
+// Type guard for NetworkId
+export function isNetworkId(obj: unknown): obj is NetworkId {
   return (
-    typeof obj === "string" &&
+    typeof obj === "object" &&
     obj !== null &&
-    Object.values(SupportedChain).includes(obj as SupportedChain)
+    "ledgerType" in obj &&
+    "id" in obj &&
+    Object.values(LedgerType).includes(obj.ledgerType as LedgerType)
   );
 }
 
-// Type guard for an array of SupportedChain
-function isSupportedChainArray(input: unknown): input is Array<SupportedChain> {
-  return Array.isArray(input) && input.every(isSupportedChain);
+// Type guard for an array of NetworkId
+function isNetworkIdArray(input: unknown): input is Array<NetworkId> {
+  return Array.isArray(input) && input.every(isNetworkId);
 }
 
 // Type guard for GatewayIdentity
@@ -65,8 +68,8 @@ export function isGatewayIdentity(obj: unknown): obj is GatewayIdentity {
     typeof (obj as Record<string, unknown>).id === "string" &&
     "version" in obj &&
     isPrivacyDraftVersionsArray((obj as Record<string, unknown>).version) &&
-    "supportedDLTs" in obj &&
-    isSupportedChainArray((obj as Record<string, unknown>).supportedDLTs) &&
+    "reachableDLTs" in obj &&
+    isNetworkIdArray((obj as Record<string, unknown>).reachableDLTs) &&
     (!("pubKey" in obj) ||
       typeof (obj as Record<string, unknown>).pubKey === "string") &&
     (!("name" in obj) ||

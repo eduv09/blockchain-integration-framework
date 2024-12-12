@@ -80,6 +80,8 @@ message SessionData {
     cacti.satp.v02.common.MessageType phase_error = 68;
     bool recovered_tried = 69;
     SATPMessages satp_Messages = 70; 
+    string sender_gateway_network_type = 71;
+    string recipient_gateway_network_type = 72; 
 }
 
 enum State {

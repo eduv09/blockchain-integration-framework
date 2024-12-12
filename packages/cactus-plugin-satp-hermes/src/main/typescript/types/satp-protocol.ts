@@ -1,5 +1,4 @@
 import { ILoggerOptions } from "@hyperledger/cactus-common";
-import { SupportedChain } from "../core/types";
 import { ConnectRouter } from "@connectrpc/connect";
 import { SATPSession } from "../core/satp-session";
 import {
@@ -12,6 +11,7 @@ import { Stage0SATPHandler } from "../core/stage-handlers/stage0-handler";
 import { Stage1SATPHandler } from "../core/stage-handlers/stage1-handler";
 import { Stage2SATPHandler } from "../core/stage-handlers/stage2-handler";
 import { Stage3SATPHandler } from "../core/stage-handlers/stage3-handler";
+import { NetworkId } from "../network-identification/chainid-list";
 
 /**
  * Represents a handler for various stages of the SATP (Secure Asset Transfer Protocol).
@@ -65,7 +65,7 @@ export interface SATPHandlerOptions {
   sessions: Map<string, SATPSession>;
   serverService: SATPService;
   clientService: SATPService;
-  supportedDLTs: SupportedChain[];
+  reachableDLTs: NetworkId[];
   pubkeys: Map<string, string>;
   gatewayId: string;
   loggerOptions: ILoggerOptions;

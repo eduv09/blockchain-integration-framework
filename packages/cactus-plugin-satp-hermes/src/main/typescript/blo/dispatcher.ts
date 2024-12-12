@@ -87,7 +87,7 @@ export class BLODispatcher {
       logLevel: "DEBUG",
       instanceId: ourGateway!.id,
       signer: signer,
-      supportedDLTs: this.orchestrator.supportedDLTs,
+      reachableDLTs: this.orchestrator.reachableDLTs,
       bridgeManager: this.bridgeManager,
       orchestrator: this.orchestrator,
       pubKey: options.pubKey,

@@ -14,13 +14,10 @@ import {
   SATPGateway,
   PluginFactorySATPGateway,
 } from "../../../main/typescript";
-import {
-  Address,
-  GatewayIdentity,
-  SupportedChain,
-} from "../../../main/typescript/core/types";
+import { Address, GatewayIdentity } from "../../../main/typescript/core/types";
 import {
   IPluginFactoryOptions,
+  LedgerType,
   PluginImportType,
 } from "@hyperledger/cactus-core-api";
 import { ClaimFormat } from "../../../main/typescript/generated/proto/cacti/satp/v02/common/message_pb";
@@ -134,7 +131,10 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
           Crash: SATP_CRASH_VERSION,
         },
       ],
-      supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+      reachableDLTs: [
+        { id: BesuTestEnvironment.BESU_NETWORK_ID, ledgerType: LedgerType.Besu2X },
+        { id: FabricTestEnvironment.FABRIC_NETWORK_ID, ledgerType: LedgerType.Fabric2 },
+      ],
       proofID: "mockProofID10",
       address: "http://localhost" as Address,
     } as GatewayIdentity;

@@ -9,13 +9,13 @@ import {
 } from "../../generated/gateway-client/typescript-axios/api";
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { SATPManager } from "../../gol/satp-manager";
-import { SupportedChain } from "../../core/types";
 import {
   getSessionActualStage,
   getStageName,
   getStateName,
 } from "../../core/session-utils";
 import { State } from "../../generated/proto/cacti/satp/v02/common/session_pb";
+import { LedgerType } from "@hyperledger/cactus-core-api";
 
 export async function executeGetStatus(
   logLevel: LogLevelDesc,
@@ -27,7 +27,7 @@ export async function executeGetStatus(
     label: fnTag,
     level: logLevel,
   });
-  
+
   logger.info(`${fnTag}, Obtaining status for sessionID=${req.sessionID}`);
 
   try {
@@ -82,38 +82,57 @@ export async function getStatusService(
     sessionData.receivedTimestamps?.stage0?.newSessionRequestMessageTimestamp;
   let originNetwork: Transact200ResponseStatusResponseOriginNetwork;
   let destinationNetwork: Transact200ResponseStatusResponseOriginNetwork;
-  if (sessionData.senderGatewayNetworkId === SupportedChain.BESU) {
-    originNetwork = {
-      dltProtocol: "besu",
-      dltSubnetworkID: "v24.4.0-RC1",
-    };
-  } else if (sessionData.senderGatewayNetworkId === SupportedChain.FABRIC) {
-    originNetwork = {
-      dltProtocol: "fabric",
-      dltSubnetworkID: "v2.0.0",
-    };
-  } else {
-    originNetwork = {
-      dltProtocol: "ethereum",
-      dltSubnetworkID: "v24.4.0-RC1",
-    };
+  switch (sessionData.senderGatewayNetworkType as LedgerType) {
+    case LedgerType.Besu2X:
+      originNetwork = {
+        dltProtocol: "besu",
+        dltSubnetworkID: "v24.4.0-RC1",
+      };
+      break;
+    case LedgerType.Fabric2:
+      originNetwork = {
+        dltProtocol: "fabric",
+        dltSubnetworkID: "v2.0.0",
+      };
+      break;
+    case LedgerType.Ethereum:
+      originNetwork = {
+        dltProtocol: "ethereum",
+        dltSubnetworkID: "v24.4.0-RC1",
+      };
+      break;
+    default:
+      originNetwork = {
+        dltProtocol: "unknown",
+        dltSubnetworkID: "unknown",
+      };
+      break;
   }
-
-  if (sessionData.recipientGatewayNetworkId === SupportedChain.BESU) {
-    destinationNetwork = {
-      dltProtocol: "besu",
-      dltSubnetworkID: "v24.4.0-RC1",
-    };
-  } else if (sessionData.recipientGatewayNetworkId === SupportedChain.FABRIC) {
-    destinationNetwork = {
-      dltProtocol: "fabric",
-      dltSubnetworkID: "v2.0.0",
-    };
-  } else {
-    destinationNetwork = {
-      dltProtocol: "ethereum",
-      dltSubnetworkID: "v24.4.0-RC1",
-    };
+  switch (sessionData.recipientGatewayNetworkType as LedgerType) {
+    case LedgerType.Besu2X:
+      destinationNetwork = {
+        dltProtocol: "besu",
+        dltSubnetworkID: "v24.4.0-RC1",
+      };
+      break;
+    case LedgerType.Fabric2:
+      destinationNetwork = {
+        dltProtocol: "fabric",
+        dltSubnetworkID: "v2.0.0",
+      };
+      break;
+    case LedgerType.Ethereum:
+      destinationNetwork = {
+        dltProtocol: "ethereum",
+        dltSubnetworkID: "v24.4.0-RC1",
+      };
+      break;
+    default:
+      destinationNetwork = {
+        dltProtocol: "unknown",
+        dltSubnetworkID: "unknown",
+      };
+      break;
   }
   if (!sessionData.hashes) {
     return {

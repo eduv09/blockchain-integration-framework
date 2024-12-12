@@ -94,7 +94,7 @@
     "fabric-network": "2.2.20",
     "fs-extra": "10.1.0",
     "hardhat": "2.22.5",
-    "knex": "2.5.1",
+    "knex": "2.4.0",
     "kubo-rpc-client": "3.0.1",
     "nyc": "13.1.0",
     "openapi-types": "12.1.3",

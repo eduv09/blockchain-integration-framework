@@ -15,7 +15,7 @@ import { Stage1ServerService } from "../core/stage-services/server/stage1-server
 import { Stage2ServerService } from "../core/stage-services/server/stage2-server-service";
 import { Stage3ServerService } from "../core/stage-services/server/stage3-server-service";
 import { SATPSession } from "../core/satp-session";
-import { GatewayIdentity, SupportedChain } from "../core/types";
+import { GatewayIdentity } from "../core/types";
 import { Stage0ClientService } from "../core/stage-services/client/stage0-client-service";
 import { Stage1ClientService } from "../core/stage-services/client/stage1-client-service";
 import { Stage2ClientService } from "../core/stage-services/client/stage2-client-service";
@@ -82,6 +82,7 @@ import {
   IRemoteLogRepository,
 } from "../repository/interfaces/repository";
 import { ISATPLoggerConfig, SATPLogger } from "../logging";
+import { NetworkId } from "../network-identification/chainid-list";
 
 export interface ISATPManagerOptions {
   logLevel?: LogLevelDesc;
@@ -89,7 +90,7 @@ export interface ISATPManagerOptions {
   sessions?: Map<string, SATPSession>;
   signer: JsObjectSigner;
   pubKey: string;
-  supportedDLTs: SupportedChain[];
+  reachableDLTs: NetworkId[];
   bridgeManager: SATPBridgesManager;
   orchestrator: GatewayOrchestrator;
   localRepository: ILocalLogRepository;
@@ -103,7 +104,7 @@ export class SATPManager {
   private status: HealthCheckResponseStatusEnum;
   private endpoints: any[] | undefined;
   private signer: JsObjectSigner;
-  public supportedDLTs: SupportedChain[] = [];
+  public reachableDLTs: NetworkId[] = [];
   private sessions: Map<string, SATPSession>;
   // maps stage to client/service and service class
   private readonly satpServices: Map<
@@ -132,7 +133,7 @@ export class SATPManager {
     this.instanceId = options.instanceId;
     this.logger.info(`Instantiated ${this.className} OK`);
     this.status = HealthCheckResponseStatusEnum.Available;
-    this.supportedDLTs = options.supportedDLTs;
+    this.reachableDLTs = options.reachableDLTs;
     this.signer = options.signer;
     this.bridgesManager = options.bridgeManager;
     this.orchestrator = options.orchestrator;
@@ -238,8 +239,8 @@ export class SATPManager {
     return this.sessions.get(sessionId);
   }
 
-  get SupportedDLTs(): SupportedChain[] {
-    return this.supportedDLTs;
+  get ReachableDLTs(): NetworkId[] {
+    return this.reachableDLTs;
   }
 
   public getSATPHandler(type: SATPHandlerType): SATPHandler | undefined {
@@ -360,7 +361,7 @@ export class SATPManager {
           sessions: this.sessions,
           serverService: serverService,
           clientService: clientService,
-          supportedDLTs: this.supportedDLTs,
+          reachableDLTs: this.reachableDLTs,
           pubkeys: this.gatewaysPubKeys,
           gatewayId: this.orchestrator.ourGateway.id,
           stage: serviceIndex,
@@ -445,7 +446,7 @@ export class SATPManager {
 
       //maybe get a suitable gateway first.
       const channel = this.orchestrator.getChannel(
-        clientSessionData.recipientGatewayNetworkId as SupportedChain,
+        clientSessionData.recipientGatewayNetworkId,
       );
 
       if (!channel) {
