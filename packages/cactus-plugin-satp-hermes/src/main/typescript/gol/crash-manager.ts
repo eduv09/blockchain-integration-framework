@@ -31,7 +31,7 @@ import { CrashRecoveryServerService } from "../core/crash-management/server-serv
 import { CrashRecoveryClientService } from "../core/crash-management/client-service";
 import { GatewayOrchestrator } from "./gateway-orchestrator";
 import { Client as PromiseConnectClient } from "@connectrpc/connect";
-import { GatewayIdentity, SupportedChain } from "../core/types";
+import { GatewayIdentity } from "../core/types";
 import { CrashRecovery } from "../generated/proto/cacti/satp/v02/crash_recovery_pb";
 import { SATPHandler } from "../types/satp-protocol";
 import { CrashStatus } from "../core/types";
@@ -440,7 +440,7 @@ export class CrashManager {
 
     try {
       const channel = this.orchestrator.getChannel(
-        sessionData.recipientGatewayNetworkId as SupportedChain,
+        sessionData.recipientGatewayNetworkId,
       );
 
       if (!channel) {
@@ -643,7 +643,7 @@ export class CrashManager {
 
     try {
       const channel = this.orchestrator.getChannel(
-        sessionData.recipientGatewayNetworkId as SupportedChain,
+        sessionData.recipientGatewayNetworkId,
       );
 
       if (!channel) {
